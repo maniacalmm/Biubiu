@@ -1,10 +1,10 @@
 import game.Ctx2D
-import javax.swing.plaf.basic.BasicGraphicsUtils
 import org.scalajs.dom.document
 import org.scalajs.dom
 import org.scalajs.dom.html
-import collection.mutable.Buffer
 
+import scala.scalajs.js
+import collection.mutable.Buffer
 
 case class Bullet(x: Double, y: Double, xV: Double, yV: Double) {
   def draw(implicit ctx: Ctx2D): Unit = {
@@ -54,9 +54,14 @@ class BattleShip(var x: Double, var y: Double, ctx: Ctx2D) {
     this.x = x
     this.y = y
   }
-
 }
 
+//object helpers {
+//  implicit class extDocument(doc: html.Document) {
+//    def
+//  }
+//
+//}
 
 object game {
   type Ctx2D =
@@ -64,41 +69,40 @@ object game {
   def clearCtx(implicit ctx: Ctx2D, canvas: html.Canvas) = ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   def main(args: Array[String]): Unit = {
-//    val canvas = document.createElement("canvas")
-//    canvas.setAttribute("width", dom.window.innerWidth.toString)
-//    canvas.setAttribute("height", dom.window.innerHeight.toString)
-//    canvas.setAttribute("id", "ctx")
-//    document.body.appendChild(canvas)
-//    implicit val c: html.Canvas = document.getElementById("ctx").asInstanceOf[html.Canvas]
-//    implicit val ctx = c.getContext("2d")
-//      .asInstanceOf[Ctx2D]
+    val canvas = document.createElement("canvas")
+    canvas.setAttribute("width", dom.window.innerWidth.toString)
+    canvas.setAttribute("height", dom.window.innerHeight.toString)
+    canvas.setAttribute("id", "ctx")
+    document.body.appendChild(canvas)
+    implicit val c: html.Canvas = document.getElementById("ctx").asInstanceOf[html.Canvas]
+    implicit val ctx = c.getContext("2d")
+      .asInstanceOf[Ctx2D]
 
-//    val ship = new BattleShip(dom.window.innerWidth / 2,  dom.window.innerHeight * 0.9, ctx)
+    val ship = new BattleShip(dom.window.innerWidth / 2,  dom.window.innerHeight * 0.9, ctx)
 
-//    dom.document.onmousemove = (e: dom.MouseEvent) => {
-//      ship.updatePostition(e.clientX, e.clientY)
-//    }
+    dom.document.onmousemove = (e: dom.MouseEvent) => {
+      ship.updatePostition(e.clientX, e.clientY)
+    }
 
+    dom.document.addEventListener("touchmove",
+      (e: dom.TouchEvent) => {
+        ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY)
+      }
+    )
 
-    dom.document.addEventListener("touchmove", (e: dom.raw.Touch) => {
-      val p = document.createElement("p")
-      p.textContent = "hello: " + s"${e} ${e.clientX} ${e.clientY}"
-      document.body.appendChild(p)
-    })
+    dom.window.setInterval(
+      () => ship.fire(),
+      50
+    )
 
-//    dom.window.setInterval(
-//      () => ship.fire(),
-//      50
-//    )
-//
-//    dom.window.setInterval(
-//      () => {
-//        clearCtx
-//        ship.drawBullet()
-//        ship.drawShip()
-//      },
-//      5)
-//
+    dom.window.setInterval(
+      () => {
+        clearCtx
+        ship.drawBullet()
+        ship.drawShip()
+      },
+      5)
+
   }
 
 }
