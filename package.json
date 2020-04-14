@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/dexianta/biubiuzz/issues"
   },
-  "homepage": "https://github.com/dexianta/biubiuzz#readme"
+  "homepage": "https://github.com/dexianta/biubiuzz#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
