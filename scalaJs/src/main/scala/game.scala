@@ -61,38 +61,44 @@ class BattleShip(var x: Double, var y: Double, ctx: Ctx2D) {
 object game {
   type Ctx2D =
     dom.CanvasRenderingContext2D
-
   def clearCtx(implicit ctx: Ctx2D, canvas: html.Canvas) = ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   def main(args: Array[String]): Unit = {
-    val canvas = document.createElement("canvas")
-    canvas.setAttribute("width", dom.window.innerWidth.toString)
-    canvas.setAttribute("height", dom.window.innerHeight.toString)
-    canvas.setAttribute("id", "ctx")
-    document.body.appendChild(canvas)
-    implicit val c: html.Canvas = document.getElementById("ctx").asInstanceOf[html.Canvas]
-    implicit val ctx = c.getContext("2d")
-      .asInstanceOf[Ctx2D]
+//    val canvas = document.createElement("canvas")
+//    canvas.setAttribute("width", dom.window.innerWidth.toString)
+//    canvas.setAttribute("height", dom.window.innerHeight.toString)
+//    canvas.setAttribute("id", "ctx")
+//    document.body.appendChild(canvas)
+//    implicit val c: html.Canvas = document.getElementById("ctx").asInstanceOf[html.Canvas]
+//    implicit val ctx = c.getContext("2d")
+//      .asInstanceOf[Ctx2D]
 
-    val ship = new BattleShip(dom.window.innerWidth / 2,  dom.window.innerHeight * 0.9, ctx)
+//    val ship = new BattleShip(dom.window.innerWidth / 2,  dom.window.innerHeight * 0.9, ctx)
 
-    dom.document.onmousemove = (e: dom.MouseEvent) => {
-      ship.updatePostition(e.clientX, e.clientY)
-    }
+//    dom.document.onmousemove = (e: dom.MouseEvent) => {
+//      ship.updatePostition(e.clientX, e.clientY)
+//    }
 
-    dom.window.setInterval(
-      () => ship.fire(),
-      50
-    )
 
-    dom.window.setInterval(
-      () => {
-        clearCtx
-        ship.drawBullet()
-        ship.drawShip()
-      },
-      5)
+    dom.document.addEventListener("touchmove", (e: dom.raw.Touch) => {
+      val p = document.createElement("p")
+      p.textContent = "hello: " + s"${e} ${e.clientX} ${e.clientY}"
+      document.body.appendChild(p)
+    })
 
+//    dom.window.setInterval(
+//      () => ship.fire(),
+//      50
+//    )
+//
+//    dom.window.setInterval(
+//      () => {
+//        clearCtx
+//        ship.drawBullet()
+//        ship.drawShip()
+//      },
+//      5)
+//
   }
 
 }

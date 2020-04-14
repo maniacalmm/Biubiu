@@ -786,15 +786,24 @@ class $c_Lgame$ extends $c_O {
     $m_Lorg_scalajs_dom_package$().document__Lorg_scalajs_dom_raw_HTMLDocument().onmousemove = ((ship$1) => ((arg1$2) => {
       $m_Lgame$().game$$$anonfun$main$1__Lorg_scalajs_dom_raw_MouseEvent__LBattleShip__V(arg1$2, ship$1)
     }))(ship);
+    $m_Lorg_scalajs_dom_package$().document__Lorg_scalajs_dom_raw_HTMLDocument().addEventListener("touchmove", ((arg1$2$1) => {
+      $m_Lgame$().game$$$anonfun$main$3__Lorg_scalajs_dom_raw_TouchEvent__V(arg1$2$1)
+    }));
     $m_Lorg_scalajs_dom_package$().window__Lorg_scalajs_dom_raw_Window().setInterval(((ship$1$1) => (() => {
       ship$1$1.fire__V()
     }))(ship), 50.0);
-    $m_Lorg_scalajs_dom_package$().window__Lorg_scalajs_dom_raw_Window().setInterval(((ctx$1, c$1, ship$1$2) => (() => $m_Lgame$().game$$$anonfun$main$5__Lorg_scalajs_dom_raw_CanvasRenderingContext2D__Lorg_scalajs_dom_raw_HTMLCanvasElement__LBattleShip__O(ctx$1, c$1, ship$1$2)))(ctx, c, ship), 5.0)
+    $m_Lorg_scalajs_dom_package$().window__Lorg_scalajs_dom_raw_Window().setInterval(((ctx$1, c$1, ship$1$2) => (() => $m_Lgame$().game$$$anonfun$main$7__Lorg_scalajs_dom_raw_CanvasRenderingContext2D__Lorg_scalajs_dom_raw_HTMLCanvasElement__LBattleShip__O(ctx$1, c$1, ship$1$2)))(ctx, c, ship), 5.0)
   };
   game$$$anonfun$main$1__Lorg_scalajs_dom_raw_MouseEvent__LBattleShip__V(e, ship$1) {
     ship$1.updatePostition__D__D__V($uD(e.clientX), $uD(e.clientY))
   };
-  game$$$anonfun$main$5__Lorg_scalajs_dom_raw_CanvasRenderingContext2D__Lorg_scalajs_dom_raw_HTMLCanvasElement__LBattleShip__O(ctx$1, c$1, ship$1) {
+  game$$$anonfun$main$3__Lorg_scalajs_dom_raw_TouchEvent__V(e) {
+    const x = new $c_T2("touch moved!!", e);
+    const this$2 = $m_s_Console$();
+    const this$3 = this$2.out__Ljava_io_PrintStream();
+    this$3.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"))
+  };
+  game$$$anonfun$main$7__Lorg_scalajs_dom_raw_CanvasRenderingContext2D__Lorg_scalajs_dom_raw_HTMLCanvasElement__LBattleShip__O(ctx$1, c$1, ship$1) {
     $m_Lgame$().clearCtx__Lorg_scalajs_dom_raw_CanvasRenderingContext2D__Lorg_scalajs_dom_raw_HTMLCanvasElement__V(ctx$1, c$1);
     ship$1.drawBullet__V();
     ship$1.drawShip__V()
@@ -899,6 +908,32 @@ function $m_jl_FloatingPointBits$() {
     $n_jl_FloatingPointBits$ = new $c_jl_FloatingPointBits$()
   };
   return $n_jl_FloatingPointBits$
+}
+class $c_jl_System$Streams$ extends $c_O {
+  constructor() {
+    super();
+    this.jl_System$Streams$__f_out = null;
+    this.jl_System$Streams$__f_err = null;
+    this.jl_System$Streams$__f_in = null;
+    $n_jl_System$Streams$ = this;
+    this.jl_System$Streams$__f_out = new $c_jl_JSConsoleBasedPrintStream(false);
+    this.jl_System$Streams$__f_err = new $c_jl_JSConsoleBasedPrintStream(true);
+    this.jl_System$Streams$__f_in = null
+  };
+}
+const $d_jl_System$Streams$ = new $TypeData().initClass({
+  jl_System$Streams$: 0
+}, false, "java.lang.System$Streams$", {
+  jl_System$Streams$: 1,
+  O: 1
+});
+$c_jl_System$Streams$.prototype.$classData = $d_jl_System$Streams$;
+let $n_jl_System$Streams$ = (void 0);
+function $m_jl_System$Streams$() {
+  if ((!$n_jl_System$Streams$)) {
+    $n_jl_System$Streams$ = new $c_jl_System$Streams$()
+  };
+  return $n_jl_System$Streams$
 }
 const $p_jl_System$SystemProperties$__loadSystemProperties__O = (function($thiz) {
   const result = {};
@@ -2074,6 +2109,23 @@ function $m_sjsr_package$() {
   };
   return $n_sjsr_package$
 }
+class $c_s_util_DynamicVariable extends $c_O {
+  constructor(init) {
+    super();
+    this.s_util_DynamicVariable__f_v = null;
+    this.s_util_DynamicVariable__f_v = init
+  };
+  toString__T() {
+    return (("DynamicVariable(" + this.s_util_DynamicVariable__f_v) + ")")
+  };
+}
+const $d_s_util_DynamicVariable = new $TypeData().initClass({
+  s_util_DynamicVariable: 0
+}, false, "scala.util.DynamicVariable", {
+  s_util_DynamicVariable: 1,
+  O: 1
+});
+$c_s_util_DynamicVariable.prototype.$classData = $d_s_util_DynamicVariable;
 class $c_s_util_hashing_MurmurHash3 extends $c_O {
   mix__I__I__I(hash, data) {
     let h = this.mixLast__I__I__I(hash, data);
@@ -2835,6 +2887,36 @@ function $m_s_Array$() {
   };
   return $n_s_Array$
 }
+class $c_s_Console$ extends $c_O {
+  constructor() {
+    super();
+    this.s_Console$__f_outVar = null;
+    this.s_Console$__f_errVar = null;
+    this.s_Console$__f_inVar = null;
+    $n_s_Console$ = this;
+    this.s_Console$__f_outVar = new $c_s_util_DynamicVariable($m_jl_System$Streams$().jl_System$Streams$__f_out);
+    this.s_Console$__f_errVar = new $c_s_util_DynamicVariable($m_jl_System$Streams$().jl_System$Streams$__f_err);
+    this.s_Console$__f_inVar = new $c_s_util_DynamicVariable(null)
+  };
+  out__Ljava_io_PrintStream() {
+    return $as_Ljava_io_PrintStream(this.s_Console$__f_outVar.s_util_DynamicVariable__f_v)
+  };
+}
+const $d_s_Console$ = new $TypeData().initClass({
+  s_Console$: 0
+}, false, "scala.Console$", {
+  s_Console$: 1,
+  O: 1,
+  s_io_AnsiColor: 1
+});
+$c_s_Console$.prototype.$classData = $d_s_Console$;
+let $n_s_Console$ = (void 0);
+function $m_s_Console$() {
+  if ((!$n_s_Console$)) {
+    $n_s_Console$ = new $c_s_Console$()
+  };
+  return $n_s_Console$
+}
 function $is_sci_LazyList$State(obj) {
   return (!(!((obj && obj.$classData) && obj.$classData.ancestors.sci_LazyList$State)))
 }
@@ -3407,6 +3489,8 @@ const $d_LBullet = new $TypeData().initClass({
   Ljava_io_Serializable: 1
 });
 $c_LBullet.prototype.$classData = $d_LBullet;
+class $c_Ljava_io_OutputStream extends $c_O {
+}
 const $f_jl_Byte__equals__O__Z = (function($thiz, that) {
   return Object.is($thiz, that)
 });
@@ -4146,6 +4230,16 @@ const $d_scm_GrowableBuilder = new $TypeData().initClass({
   scm_Clearable: 1
 });
 $c_scm_GrowableBuilder.prototype.$classData = $d_scm_GrowableBuilder;
+const $ct_Ljava_io_FilterOutputStream__Ljava_io_OutputStream__ = (function($thiz, out) {
+  $thiz.Ljava_io_FilterOutputStream__f_out = out;
+  return $thiz
+});
+class $c_Ljava_io_FilterOutputStream extends $c_Ljava_io_OutputStream {
+  constructor() {
+    super();
+    this.Ljava_io_FilterOutputStream__f_out = null
+  };
+}
 class $c_jl_ArithmeticException extends $c_jl_RuntimeException {
   constructor(s) {
     super();
@@ -4235,6 +4329,19 @@ const $d_jl_IndexOutOfBoundsException = new $TypeData().initClass({
   Ljava_io_Serializable: 1
 });
 $c_jl_IndexOutOfBoundsException.prototype.$classData = $d_jl_IndexOutOfBoundsException;
+class $c_jl_JSConsoleBasedPrintStream$DummyOutputStream extends $c_Ljava_io_OutputStream {
+}
+const $d_jl_JSConsoleBasedPrintStream$DummyOutputStream = new $TypeData().initClass({
+  jl_JSConsoleBasedPrintStream$DummyOutputStream: 0
+}, false, "java.lang.JSConsoleBasedPrintStream$DummyOutputStream", {
+  jl_JSConsoleBasedPrintStream$DummyOutputStream: 1,
+  Ljava_io_OutputStream: 1,
+  O: 1,
+  Ljava_io_Closeable: 1,
+  jl_AutoCloseable: 1,
+  Ljava_io_Flushable: 1
+});
+$c_jl_JSConsoleBasedPrintStream$DummyOutputStream.prototype.$classData = $d_jl_JSConsoleBasedPrintStream$DummyOutputStream;
 class $c_jl_NullPointerException extends $c_jl_RuntimeException {
   constructor() {
     super();
@@ -5779,6 +5886,36 @@ const $d_sci_VectorIterator = new $TypeData().initClass({
   sci_VectorPointer: 1
 });
 $c_sci_VectorIterator.prototype.$classData = $d_sci_VectorIterator;
+const $ct_Ljava_io_PrintStream__Ljava_io_OutputStream__Z__Ljava_nio_charset_Charset__ = (function($thiz, _out, autoFlush, charset) {
+  $thiz.Ljava_io_PrintStream__f_autoFlush = autoFlush;
+  $thiz.Ljava_io_PrintStream__f_charset = charset;
+  $ct_Ljava_io_FilterOutputStream__Ljava_io_OutputStream__($thiz, _out);
+  $thiz.Ljava_io_PrintStream__f_closing = false;
+  $thiz.Ljava_io_PrintStream__f_java$io$PrintStream$$closed = false;
+  $thiz.Ljava_io_PrintStream__f_errorFlag = false;
+  return $thiz
+});
+class $c_Ljava_io_PrintStream extends $c_Ljava_io_FilterOutputStream {
+  constructor() {
+    super();
+    this.Ljava_io_PrintStream__f_encoder = null;
+    this.Ljava_io_PrintStream__f_autoFlush = false;
+    this.Ljava_io_PrintStream__f_charset = null;
+    this.Ljava_io_PrintStream__f_closing = false;
+    this.Ljava_io_PrintStream__f_java$io$PrintStream$$closed = false;
+    this.Ljava_io_PrintStream__f_errorFlag = false;
+    this.Ljava_io_PrintStream__f_bitmap$0 = false
+  };
+}
+function $as_Ljava_io_PrintStream(obj) {
+  return (((obj instanceof $c_Ljava_io_PrintStream) || (obj === null)) ? obj : $throwClassCastException(obj, "java.io.PrintStream"))
+}
+function $isArrayOf_Ljava_io_PrintStream(obj, depth) {
+  return (!(!(((obj && obj.$classData) && (obj.$classData.arrayDepth === depth)) && obj.$classData.arrayBase.ancestors.Ljava_io_PrintStream)))
+}
+function $asArrayOf_Ljava_io_PrintStream(obj, depth) {
+  return (($isArrayOf_Ljava_io_PrintStream(obj, depth) || (obj === null)) ? obj : $throwArrayCastException(obj, "Ljava.io.PrintStream;", depth))
+}
 const $f_sc_View__toString__T = (function($thiz) {
   return ($thiz.className__T() + "(<not computed>)")
 });
@@ -5862,6 +5999,70 @@ const $d_sjs_js_JavaScriptException = new $TypeData().initClass({
   s_Equals: 1
 });
 $c_sjs_js_JavaScriptException.prototype.$classData = $d_sjs_js_JavaScriptException;
+const $p_jl_JSConsoleBasedPrintStream__doWriteLine__T__V = (function($thiz, line) {
+  if (($as_T((typeof console)) !== "undefined")) {
+    let $$x1;
+    if ($thiz.jl_JSConsoleBasedPrintStream__f_isErr) {
+      const x = console.error;
+      $$x1 = $uZ((!(!x)))
+    } else {
+      $$x1 = false
+    };
+    if ($$x1) {
+      console.error(line)
+    } else {
+      console.log(line)
+    }
+  }
+});
+class $c_jl_JSConsoleBasedPrintStream extends $c_Ljava_io_PrintStream {
+  constructor(isErr) {
+    super();
+    this.jl_JSConsoleBasedPrintStream__f_isErr = false;
+    this.jl_JSConsoleBasedPrintStream__f_flushed = false;
+    this.jl_JSConsoleBasedPrintStream__f_buffer = null;
+    this.jl_JSConsoleBasedPrintStream__f_isErr = isErr;
+    const out = new $c_jl_JSConsoleBasedPrintStream$DummyOutputStream();
+    $ct_Ljava_io_PrintStream__Ljava_io_OutputStream__Z__Ljava_nio_charset_Charset__(this, out, false, null);
+    this.jl_JSConsoleBasedPrintStream__f_flushed = true;
+    this.jl_JSConsoleBasedPrintStream__f_buffer = ""
+  };
+  java$lang$JSConsoleBasedPrintStream$$printString__T__V(s) {
+    let rest = s;
+    while ((rest !== "")) {
+      const this$1 = rest;
+      const nlPos = $uI(this$1.indexOf("\n"));
+      if ((nlPos < 0)) {
+        this.jl_JSConsoleBasedPrintStream__f_buffer = (("" + this.jl_JSConsoleBasedPrintStream__f_buffer) + rest);
+        this.jl_JSConsoleBasedPrintStream__f_flushed = false;
+        rest = ""
+      } else {
+        const $$x1 = this.jl_JSConsoleBasedPrintStream__f_buffer;
+        const this$3 = rest;
+        $p_jl_JSConsoleBasedPrintStream__doWriteLine__T__V(this, (("" + $$x1) + $as_T(this$3.substring(0, nlPos))));
+        this.jl_JSConsoleBasedPrintStream__f_buffer = "";
+        this.jl_JSConsoleBasedPrintStream__f_flushed = true;
+        const this$4 = rest;
+        const beginIndex = ((1 + nlPos) | 0);
+        rest = $as_T(this$4.substring(beginIndex))
+      }
+    }
+  };
+}
+const $d_jl_JSConsoleBasedPrintStream = new $TypeData().initClass({
+  jl_JSConsoleBasedPrintStream: 0
+}, false, "java.lang.JSConsoleBasedPrintStream", {
+  jl_JSConsoleBasedPrintStream: 1,
+  Ljava_io_PrintStream: 1,
+  Ljava_io_FilterOutputStream: 1,
+  Ljava_io_OutputStream: 1,
+  O: 1,
+  Ljava_io_Closeable: 1,
+  jl_AutoCloseable: 1,
+  Ljava_io_Flushable: 1,
+  jl_Appendable: 1
+});
+$c_jl_JSConsoleBasedPrintStream.prototype.$classData = $d_jl_JSConsoleBasedPrintStream;
 const $p_sc_StrictOptimizedLinearSeqOps__loop$2__I__sc_LinearSeq__sc_LinearSeq = (function($thiz, n, s) {
   while (true) {
     if (((n <= 0) || s.isEmpty__Z())) {
