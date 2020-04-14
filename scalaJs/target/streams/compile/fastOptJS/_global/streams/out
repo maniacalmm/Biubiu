@@ -1,0 +1,19 @@
+[0m[[0m[0minfo[0m] [0m[0mFast optimizing /Users/dexian/code/ScalaGame/scalaJs/target/scala-2.13/scalagame-fastopt.js[0m
+[0m[[0m[0mdebug[0m] [0m[0mLinker: Compute reachability: 253152 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mLinker: Assemble LinkedClasses: 23982 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mLinker: Check IR: 180839 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mLinker: 493830 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mOptimizer: Batch mode: true[0m
+[0m[[0m[0mdebug[0m] [0m[0mOptimizer: Incremental part: 109253 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mOptimizer: Optimizing 2095 methods.[0m
+[0m[[0m[0mdebug[0m] [0m[0mOptimizer: Optimizer part: 351747 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mOptimizer: 466975 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mRefiner: Compute reachability: 37648 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mRefiner: Assemble LinkedClasses: 2017 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mRefiner: 45824 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mEmitter: Generate classes: 202493 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mEmitter: Write trees: 20620 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mEmitter: Class tree cache stats: reused: 201 -- invalidated: 231[0m
+[0m[[0m[0mdebug[0m] [0m[0mEmitter: Method tree cache stats: reused: 0 -- invalidated: 797[0m
+[0m[[0m[0mdebug[0m] [0m[0mEmitter: 242970 us[0m
+[0m[[0m[0mdebug[0m] [0m[0mBasicBackend: Write result: 94415 us[0m
