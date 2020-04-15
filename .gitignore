@@ -1,1 +1,4 @@
-.idea/*
+scalaJs/.idea/*
+scalaJs/target/streams/*
+scalaJs/target/scala-2.13/classes/*
+scalaJs/target/scala-2.13/update/*
