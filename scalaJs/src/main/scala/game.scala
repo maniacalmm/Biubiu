@@ -22,10 +22,11 @@ case class Bullet(x: Double,
                   color: String,
                   var damage: Double = 10.0,
                   isFoe: Boolean = true,
-                  var isHit: Boolean = false) {
+                  var isHit: Boolean = false,
+                  val size: Int = 10) {
   def draw(implicit ctx: Ctx2D): Unit = {
     ctx.beginPath
-    ctx.arc(x, y, 5, 0, Math.PI * 2)
+    ctx.arc(x, y, size, 0, Math.PI * 2)
     ctx.fillStyle = color
     ctx.fill
   }
@@ -40,7 +41,6 @@ abstract class BattleShip(xx: Double,
                           val isFoe: Boolean = true,
                           shootRainBow: Boolean = false) {
   var health                            = 100.0;
-  var energy                            = 100.0;
   protected implicit val context: Ctx2D = ctx;
   protected var dx                      = 0.0;
   protected var dy                      = 0.0;
@@ -53,7 +53,7 @@ abstract class BattleShip(xx: Double,
   val shipColor                  = Utils.getRandomColor
   protected lazy val bulletColor = Utils.getRandomColor
 
-  protected val fixSize      = Math.max(browserStuff.width * 0.025, 30);
+  protected val fixSize      = Math.max(browserStuff.height * 0.025, 50);
   protected var size         = fixSize;
   protected val dSize        = Random.nextDouble() * 3;
   protected var bulletDamage = 10.0;
@@ -71,6 +71,13 @@ abstract class BattleShip(xx: Double,
   def damage(b: Bullet): Unit = {
     val distance = Math.pow(b.x - this.x, 2) + Math.pow(b.y - this.y, 2)
     if (distance <= Math.pow(this.size, 2) && b.isFoe != this.isFoe) {
+      if (this.isFoe) {
+        Global.score += 10
+        Global.energy += 10
+        if (Global.energy > 100) {
+          Global.energy = 100
+        }
+      }
       if (this.health > 0) this.health -= b.damage
       b.setHit
     }
@@ -95,7 +102,7 @@ abstract class BattleShip(xx: Double,
              this.y,
              this.dx + horizontalBulletVelocity,
              this.dy + this.bulletSpeed,
-             bulletColor,
+             "#000000",
              damage = this.bulletDamage,
              isFoe = this.isFoe)
     } else {
@@ -238,11 +245,19 @@ class Rectangle(xx: Double,
 
 object Global {
   var allBullets = Buffer[Bullet]()
+  var score      = 0;
+  var energy     = 0.0;
 
   def addBullets(b: Bullet) = allBullets += b
   def updateBulletPosition = {
     allBullets = allBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
     allBullets.foreach(_.draw(browserStuff.ctx))
+  }
+
+  def drawScore(ctx: Ctx2D) = {
+    ctx.beginPath()
+    ctx.font = "50px Verdana"
+    ctx.fillText(this.score.toString, browserStuff.width - 200, 60)
   }
 
   def drawHealthBar(ship: BattleShip, ctx: Ctx2D) = {
@@ -253,6 +268,16 @@ object Global {
     ctx.stroke()
     ctx.fillStyle = ship.shipColor
     ctx.fillRect(40, 40, ship.health / 100 * 200, 20)
+  }
+
+  def drawEnergy(ship: BattleShip, ctx: Ctx2D) = {
+    ctx.beginPath()
+    ctx.lineWidth = 2
+    ctx.rect(40, 70, 200, 20)
+    ctx.strokeStyle = ship.shipColor
+    ctx.stroke()
+    ctx.fillStyle = ship.shipColor
+    ctx.fillRect(40, 70, Global.energy / 100 * 200, 20)
   }
 }
 
@@ -296,15 +321,23 @@ object Utils {
       case _ => Color.blue
     }
 
+  def bulletHit(b1: Bullet, b2: Bullet): Boolean = {
+    (Math.pow(b1.x - b2.x, 2) + Math.pow(b1.y - b2.y, 2) + 3) <= Math.pow(b1.size + b2.size, 2)
+  }
+
   def checkDamage(ship: BattleShip, foes: Buffer[BattleShip]): Boolean = {
+
     // invoke bullet damage
     Global.allBullets.foreach(b => {
       ship.damage(b)
       foes.foreach(_.damage(b))
     })
-
     // invoke ship damage
     foes.foreach(f => ship.damageShip(f))
+    // ship bullets can fight off foes' bullets
+    val shipBullet = Global.allBullets.filter(!_.isFoe)
+    val foeBullet  = Global.allBullets.filter(_.isFoe)
+    shipBullet.foreach(s => foeBullet.foreach(f => if (bulletHit(s, f)) { s.setHit; f.setHit }))
 
     // remove broken ship
     foes --= foes.filter(_.health <= 0)
@@ -383,13 +416,18 @@ object game {
       150
     )
 
-    dom.window.setInterval(() => {
-      clearCtx
-      Global.drawHealthBar(ship, ctx)
-      Global.allBullets.foreach(_.draw)
-      ship.drawShip()
-      foes.foreach(_.drawShip())
-    }, 10)
+    dom.window.setInterval(
+      () => {
+        clearCtx
+        Global.drawHealthBar(ship, ctx)
+        Global.drawEnergy(ship, ctx)
+        Global.drawScore(ctx)
+        Global.allBullets.foreach(_.draw)
+        ship.drawShip()
+        foes.foreach(_.drawShip())
+      },
+      10
+    )
 
   }
 
