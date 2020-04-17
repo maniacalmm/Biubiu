@@ -371,7 +371,7 @@ object game {
     }
 
     dom.document.addEventListener("touchmove", (e: dom.TouchEvent) => {
-      ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 70)
+      ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 100)
     })
 
     dom.window.setInterval(
