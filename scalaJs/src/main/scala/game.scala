@@ -20,7 +20,7 @@ case class Bullet(x: Double,
                   dx: Double,
                   dy: Double,
                   color: String,
-                  damage: Double = 10.0,
+                  var damage: Double = 10.0,
                   isFoe: Boolean = true,
                   var isHit: Boolean = false) {
   def draw(implicit ctx: Ctx2D): Unit = {
@@ -47,15 +47,16 @@ abstract class BattleShip(xx: Double,
   var x                                 = xx;
   var y                                 = yy;
   protected var alpha                   = Math.PI / 2 * 3;
-  protected var dAlpha = Random.nextDouble() * Math.PI * 0.1 * (if (Random.nextGaussian() > 0) -1
+  protected var dAlpha = Random.nextDouble() * Math.PI * 0.3 * (if (Random.nextGaussian() > 0) -1
                                                                 else 1)
+  protected var bulletSpeed      = 25 + Random.nextGaussian() % 10
   val shipColor                  = Utils.getRandomColor
   protected lazy val bulletColor = Utils.getRandomColor
 
-  protected val fixSize = 30.0;
-  protected var size    = fixSize;
-  protected val dSize   = Random.nextDouble() * 3;
-
+  protected val fixSize      = Math.max(browserStuff.width * 0.025, 30);
+  protected var size         = fixSize;
+  protected val dSize        = Random.nextDouble() * 3;
+  protected var bulletDamage = 10.0;
   updatePostition(x, y)
 
   def drawShip()
@@ -70,7 +71,7 @@ abstract class BattleShip(xx: Double,
   def damage(b: Bullet): Unit = {
     val distance = Math.pow(b.x - this.x, 2) + Math.pow(b.y - this.y, 2)
     if (distance <= Math.pow(this.size, 2) && b.isFoe != this.isFoe) {
-      this.health -= b.damage
+      if (this.health > 0) this.health -= b.damage
       b.setHit
     }
   }
@@ -93,15 +94,17 @@ abstract class BattleShip(xx: Double,
       Bullet(this.x + delta,
              this.y,
              this.dx + horizontalBulletVelocity,
-             +30 + this.dy,
+             this.dy + this.bulletSpeed,
              bulletColor,
+             damage = this.bulletDamage,
              isFoe = this.isFoe)
     } else {
       Bullet(this.x + delta,
              this.y,
              this.dx + horizontalBulletVelocity,
-             -30 + this.dy,
+             -this.bulletSpeed + this.dy,
              bulletColor,
+             damage = this.bulletDamage,
              isFoe = this.isFoe)
     }
 
@@ -128,6 +131,8 @@ abstract class BattleShip(xx: Double,
     this.x += (Random.nextGaussian() * 10) % 10
     this.y += Random.nextDouble() * 10
   }
+
+  def setBulletDamage(d: Double) = this.bulletDamage = d
 }
 
 class Circle(xx: Double,
@@ -170,6 +175,67 @@ class Triangle(xx: Double,
   }
 }
 
+class Cross(xx: Double,
+            yy: Double,
+            ctx: Ctx2D,
+            rotate: Boolean = true,
+            isFoe: Boolean = true,
+            shootRainBow: Boolean = false)
+    extends BattleShip(xx, yy, ctx, rotate, isFoe, shootRainBow) {
+  val fixAngel = Math.PI / 2
+
+  def drawShip(): Unit = {
+
+    var (ax, ay) = (x + size * Math.cos(alpha), this.y + size * Math.sin(alpha))
+    var (bx, by) =
+      (x + size * Math.cos(alpha + fixAngel), this.y + size * Math.sin(alpha + fixAngel))
+    var (cx, cy) =
+      (x + size * Math.cos(alpha + 2 * fixAngel), this.y + size * Math.sin(alpha + 2 * fixAngel))
+    var (dx, dy) =
+      (x + size * Math.cos(alpha + 3 * fixAngel), this.y + size * Math.sin(alpha + 3 * fixAngel))
+
+    ctx.beginPath
+    ctx.lineWidth = this.size / 2
+    ctx.moveTo(ax, ay)
+    ctx.lineTo(cx, cy)
+    ctx.strokeStyle = this.shipColor
+    ctx.stroke()
+
+    ctx.moveTo(bx, by)
+    ctx.lineTo(dx, dy)
+    ctx.strokeStyle = this.shipColor
+    ctx.stroke()
+  }
+}
+
+class Rectangle(xx: Double,
+                yy: Double,
+                ctx: Ctx2D,
+                rotate: Boolean = true,
+                isFoe: Boolean = true,
+                shootRainBow: Boolean = false)
+    extends BattleShip(xx, yy, ctx, rotate, isFoe, shootRainBow) {
+  val fixAngel = Math.PI / 2
+
+  def drawShip(): Unit = {
+    var (ax, ay) = (x + size * Math.cos(alpha), this.y + size * Math.sin(alpha))
+    var (bx, by) =
+      (x + size * Math.cos(alpha + fixAngel), this.y + size * Math.sin(alpha + fixAngel))
+    var (cx, cy) =
+      (x + size * Math.cos(alpha + 2 * fixAngel), this.y + size * Math.sin(alpha + 2 * fixAngel))
+    var (dx, dy) =
+      (x + size * Math.cos(alpha + 3 * fixAngel), this.y + size * Math.sin(alpha + 3 * fixAngel))
+
+    ctx.beginPath
+    ctx.moveTo(ax, ay)
+    ctx.lineTo(bx, by)
+    ctx.lineTo(cx, cy)
+    ctx.lineTo(dx, dy)
+    ctx.fillStyle = this.shipColor
+    ctx.fill
+  }
+}
+
 object Global {
   var allBullets = Buffer[Bullet]()
 
@@ -177,6 +243,16 @@ object Global {
   def updateBulletPosition = {
     allBullets = allBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
     allBullets.foreach(_.draw(browserStuff.ctx))
+  }
+
+  def drawHealthBar(ship: BattleShip, ctx: Ctx2D) = {
+    ctx.beginPath()
+    ctx.lineWidth = 2
+    ctx.rect(40, 40, 200, 20)
+    ctx.strokeStyle = ship.shipColor
+    ctx.stroke()
+    ctx.fillStyle = ship.shipColor
+    ctx.fillRect(40, 40, ship.health / 100 * 200, 20)
   }
 }
 
@@ -201,7 +277,9 @@ object Foes {
   def addFoe(foes: Buffer[BattleShip]): Unit = {
     (Random.nextInt() % 4) match {
       case 0 => foes += new Circle(browserStuff.width * Random.nextDouble(), 0, ctx)
-      case _ => foes += new Triangle(browserStuff.width * Random.nextDouble(), 0, ctx)
+      case 1 => foes += new Triangle(browserStuff.width * Random.nextDouble(), 0, ctx)
+      case 2 => foes += new Cross(browserStuff.width * Random.nextDouble(), 0, ctx)
+      case _ => foes += new Rectangle(browserStuff.width * Random.nextDouble(), 0, ctx)
     }
     x += 50
     foes --= foes.filter(_.y > height + 50)
@@ -225,12 +303,8 @@ object Utils {
       foes.foreach(_.damage(b))
     })
 
-//    println(s"checking damage: ")
-//    Global.allBullets.foreach(println)
-//    println("====")
-
     // invoke ship damage
-    foes.foreach(_.damageShip(ship))
+    foes.foreach(f => ship.damageShip(f))
 
     // remove broken ship
     foes --= foes.filter(_.health <= 0)
@@ -254,6 +328,7 @@ object game {
 
     val ship =
       new Triangle(dom.window.innerWidth / 2, dom.window.innerHeight * 0.9, ctx, false, false, true)
+    ship.setBulletDamage(30)
     val foes = Buffer[BattleShip]()
 
     dom.document.onmousemove = (e: dom.MouseEvent) => {
@@ -266,10 +341,10 @@ object game {
 
     dom.window.setInterval(
       () => {
-        if (foes.length < 2) Foes.addFoe(foes)
+        if (foes.length < 10) Foes.addFoe(foes)
         foes --= foes.filter(f => f.y > browserStuff.height + 20)
       },
-      4000
+      2000
     )
 
     dom.window.setInterval(
@@ -310,6 +385,7 @@ object game {
 
     dom.window.setInterval(() => {
       clearCtx
+      Global.drawHealthBar(ship, ctx)
       Global.allBullets.foreach(_.draw)
       ship.drawShip()
       foes.foreach(_.drawShip())
