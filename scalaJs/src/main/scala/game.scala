@@ -365,7 +365,7 @@ object game {
     val foes = Buffer[BattleShip]()
 
     dom.document.onmousemove = (e: dom.MouseEvent) => {
-      ship.updatePostition(e.clientX, e.clientY)
+      ship.updatePostition(e.clientX, e.clientY - 15)
     }
 
     dom.document.addEventListener("touchmove", (e: dom.TouchEvent) => {
