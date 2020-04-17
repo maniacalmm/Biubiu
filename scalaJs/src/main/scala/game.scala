@@ -8,6 +8,8 @@ import scala.scalajs.js
 import collection.mutable.Buffer
 import scala.util.Random
 
+//TODO: the bullet hits foe, set foe back a bit, so the shooting feels better
+
 object Color {
   val red    = "#DF0024"
   val yellow = "#F3C300"
@@ -369,7 +371,7 @@ object game {
     }
 
     dom.document.addEventListener("touchmove", (e: dom.TouchEvent) => {
-      ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY)
+      ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 70)
     })
 
     dom.window.setInterval(
