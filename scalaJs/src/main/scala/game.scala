@@ -107,7 +107,7 @@ abstract class BattleShip(xx: Double,
         })
 
       Global.energy -= 100;
-      Global.normalBullets ++= biuBullets
+      Global.allBullets ++= biuBullets
     } else {
       Global.permissionToBiu = false
     }
@@ -143,7 +143,7 @@ abstract class BattleShip(xx: Double,
       bullet.copy(color = Utils.getRandomColor)
     } else bullet
 
-    Global.normalBullets += bullet
+    Global.allBullets += bullet
   }
 
   def updatePostition(x: Double, y: Double) = {
@@ -313,8 +313,7 @@ case class HpDrop(xx: Double, yy: Double, ctx: Ctx2D) extends Drop(xx, yy, ctx) 
 }
 
 object Global {
-  var normalBullets    = Buffer[Bullet]()
-  var biuBullets       = Buffer[Seq[Bullet]]()
+  var allBullets       = Buffer[Bullet]()
   var score            = 0;
   var energy           = 0.0;
   var ship: BattleShip = null
@@ -357,10 +356,10 @@ object Global {
     score = 0;
   }
 
-  def addBullets(b: Bullet) = normalBullets += b
+  def addBullets(b: Bullet) = allBullets += b
   def updateBulletPosition = {
-    normalBullets = normalBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
-    normalBullets.foreach(_.draw(browserStuff.ctx))
+    allBullets = allBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
+    allBullets.foreach(_.draw(browserStuff.ctx))
   }
 
   def drawScore(ctx: Ctx2D) = {
@@ -452,21 +451,21 @@ object Utils {
     Global.drops --= Global.drops.filter(_.used)
 
     // invoke bullet damage
-    Global.normalBullets.foreach(b => {
+    Global.allBullets.foreach(b => {
       ship.damage(b)
       foes.foreach(_.damage(b))
     })
     // invoke ship damage
     foes.foreach(f => ship.damageShip(f))
     // ship bullets can fight off foes' bullets
-    val shipBullet = Global.normalBullets.filter(!_.isFoe)
-    val foeBullet  = Global.normalBullets.filter(_.isFoe)
+    val shipBullet = Global.allBullets.filter(!_.isFoe)
+    val foeBullet  = Global.allBullets.filter(_.isFoe)
     shipBullet.foreach(s => foeBullet.foreach(f => if (bulletHit(s, f)) { s.setHit; f.setHit }))
 
     // remove broken ship
     foes --= foes.filter(_.health <= 0)
     // remove used bullet
-    Global.normalBullets --= Global.normalBullets.filter(_.isHit)
+    Global.allBullets --= Global.allBullets.filter(_.isHit)
 
     if (ship.health <= 0) true // game over
     else false
@@ -495,7 +494,18 @@ object game {
         if (foes.length < 10) Foes.addFoe(foes)
         foes --= foes.filter(f => f.y > browserStuff.height + 20)
       },
-      2000
+      1500
+    )
+
+    dom.window.setInterval(
+      () => {
+        println(s"bullet: ${Global.allBullets.size}")
+        println(s"ship: ${Global.foes.length}")
+        Global.allBullets --= Global.allBullets.filter(b => {
+          b.x < 0 || b.y < 0 || b.x > browserStuff.width || b.y > browserStuff.height
+        })
+      },
+      1000
     )
 
     intervalId += dom.window.setInterval(
@@ -556,7 +566,7 @@ object game {
         Global.drawHealthBar(ship, ctx)
         Global.drawEnergy(ship, ctx)
         Global.drawScore(ctx)
-        Global.normalBullets.foreach(_.draw)
+        Global.allBullets.foreach(_.draw)
         ship.drawShip()
         foes.foreach(_.drawShip())
         drops.foreach(_.drawDrop())
