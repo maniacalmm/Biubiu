@@ -494,7 +494,7 @@ object game {
         if (foes.length < 10) Foes.addFoe(foes)
         foes --= foes.filter(f => f.y > browserStuff.height + 20)
       },
-      1500
+      1800
     )
 
     dom.window.setInterval(
@@ -510,10 +510,10 @@ object game {
 
     intervalId += dom.window.setInterval(
       () => {
-        if (drops.length < 2) Drops.addDrop(drops)
+        if (drops.length < 5) Drops.addDrop(drops)
         drops --= drops.filter(f => f.y > browserStuff.height + 20)
       },
-      5000
+      4000
     )
 
     intervalId += dom.window.setInterval(
