@@ -1,4 +1,4 @@
-import Global.ship
+import Global.{drawHealthBar, ship}
 import browserStuff.{ctx, height, width}
 import game.{Ctx2D, start}
 import org.scalajs.dom.document
@@ -79,9 +79,6 @@ abstract class BattleShip(xx: Double,
       if (this.isFoe) {
         Global.score += 10
         Global.energy += 10
-        if (Global.energy > 100) {
-          Global.energy = 100
-        }
       }
       if (this.health > 0) this.health -= b.damage
       b.setHit
@@ -91,6 +88,29 @@ abstract class BattleShip(xx: Double,
   def damageShip(s: BattleShip): Unit = {
     val distance = Math.pow(s.x - this.x, 2) + Math.pow(s.y - this.y, 2)
     if (distance <= Math.pow(this.size, 2) && s.isFoe != this.isFoe) this.health = 0
+  }
+
+  def biubiu() = {
+    val layer = (Global.energy / 100).toInt
+    if (layer > 0) {
+      val bullets = 50
+      val biuBullets = (0 to bullets)
+        .map(x => 2 * Math.PI / bullets.toDouble * x.toDouble)
+        .map(degree => {
+          Bullet(x,
+                 y,
+                 this.dx + bulletSpeed * Math.cos(degree),
+                 this.dy + bulletSpeed * Math.sin(degree),
+                 Utils.getRandomColor,
+                 damage = this.bulletDamage,
+                 isFoe = this.isFoe)
+        })
+
+      Global.energy -= 100;
+      Global.normalBullets ++= biuBullets
+    } else {
+      Global.permissionToBiu = false
+    }
   }
 
   def fire() = {
@@ -123,7 +143,7 @@ abstract class BattleShip(xx: Double,
       bullet.copy(color = Utils.getRandomColor)
     } else bullet
 
-    Global.allBullets += bullet
+    Global.normalBullets += bullet
   }
 
   def updatePostition(x: Double, y: Double) = {
@@ -242,12 +262,65 @@ class Rectangle(xx: Double,
   }
 }
 
+abstract class Drop(xx: Double, yy: Double, ctx: Ctx2D) {
+  var x    = xx;
+  var y    = yy;
+  var used = false;
+  def dropMove(): Unit = {
+    this.x += (Random.nextGaussian() * 10) % 10
+    this.y += Random.nextDouble() * 10
+  }
+
+  def drawDrop()
+
+  def hitDrop(ship: BattleShip)
+}
+
+case class BiuDrop(xx: Double, yy: Double, ctx: Ctx2D) extends Drop(xx, yy, ctx) {
+
+  def hitDrop(ship: BattleShip): Unit = {
+//    println(s"biuDrop: $x, ${y} :: ${ship.x}, ${ship.y}")
+    if (Math.pow(x + 50 - ship.x, 2) + Math.pow(y + 50 - ship.y, 2) <= Math.pow(50, 2)) {
+      Global.permissionToBiu = true
+      used = true
+    }
+  }
+
+  def drawDrop(): Unit = {
+    ctx.beginPath()
+    ctx.font = "40px verdana"
+    ctx.fillStyle = Utils.getRandomColor
+    ctx.fillText("biubiu", x, y)
+  }
+}
+
+case class HpDrop(xx: Double, yy: Double, ctx: Ctx2D) extends Drop(xx, yy, ctx) {
+//  println(s"HpDrop: $x, ${y} :: ${ship.x}, ${ship.y}")
+  def hitDrop(ship: BattleShip) = {
+    if (Math.pow(x - ship.x + 50, 2) + Math.pow(y + 30 - ship.y, 2) <= Math.pow(50, 2)) {
+      ship.health += 20
+      if (ship.health > 100) ship.health = 100
+      used = true
+    }
+  }
+
+  def drawDrop(): Unit = {
+    ctx.beginPath()
+    ctx.font = "40px verdana"
+    ctx.fillStyle = Utils.getRandomColor
+    ctx.fillText("HP", x, y)
+  }
+}
+
 object Global {
-  var allBullets       = Buffer[Bullet]()
+  var normalBullets    = Buffer[Bullet]()
+  var biuBullets       = Buffer[Seq[Bullet]]()
   var score            = 0;
   var energy           = 0.0;
   var ship: BattleShip = null
   var foes             = Buffer[BattleShip]()
+  val drops            = Buffer[Drop]()
+  var permissionToBiu  = false;
 
   val mouseMoveEvent =
     (e: dom.MouseEvent) => {
@@ -284,10 +357,10 @@ object Global {
     score = 0;
   }
 
-  def addBullets(b: Bullet) = allBullets += b
+  def addBullets(b: Bullet) = normalBullets += b
   def updateBulletPosition = {
-    allBullets = allBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
-    allBullets.foreach(_.draw(browserStuff.ctx))
+    normalBullets = normalBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
+    normalBullets.foreach(_.draw(browserStuff.ctx))
   }
 
   def drawScore(ctx: Ctx2D) = {
@@ -297,6 +370,7 @@ object Global {
   }
 
   def drawHealthBar(ship: BattleShip, ctx: Ctx2D) = {
+    ctx.clearRect(40, 40, 200, 20)
     ctx.beginPath()
     ctx.lineWidth = 2
     ctx.rect(40, 40, 200, 20)
@@ -304,6 +378,8 @@ object Global {
     ctx.stroke()
     ctx.fillStyle = ship.shipColor
     ctx.fillRect(40, 40, ship.health / 100 * 200, 20)
+    ctx.font = "20px Verdana"
+    ctx.fillText(s" HP", 244, 60)
   }
 
   def drawEnergy(ship: BattleShip, ctx: Ctx2D) = {
@@ -313,7 +389,9 @@ object Global {
     ctx.strokeStyle = ship.shipColor
     ctx.stroke()
     ctx.fillStyle = ship.shipColor
-    ctx.fillRect(40, 70, Global.energy / 100 * 200, 20)
+    ctx.fillRect(40, 70, (Global.energy % 100 / 100) * 200, 20)
+    ctx.font = "20px Verdana"
+    ctx.fillText(s" x ${(Global.energy / 100).toInt}", 240, 90)
   }
 }
 
@@ -332,9 +410,18 @@ object browserStuff {
     .asInstanceOf[Ctx2D]
 }
 
+object Drops {
+  import browserStuff._
+  def addDrop(drop: Buffer[Drop]): Unit = {
+    (Random.nextGaussian() > 0) match {
+      case true  => drop += new HpDrop(browserStuff.width * Random.nextDouble(), 0, ctx)
+      case false => drop += new BiuDrop(browserStuff.width * Random.nextDouble(), 0, ctx)
+    }
+  }
+}
+
 object Foes {
   import browserStuff._
-  var x = 0
   def addFoe(foes: Buffer[BattleShip]): Unit = {
     (Random.nextInt() % 4) match {
       case 0 => foes += new Circle(browserStuff.width * Random.nextDouble(), 0, ctx)
@@ -342,8 +429,6 @@ object Foes {
       case 2 => foes += new Cross(browserStuff.width * Random.nextDouble(), 0, ctx)
       case _ => foes += new Rectangle(browserStuff.width * Random.nextDouble(), 0, ctx)
     }
-    x += 50
-    foes --= foes.filter(_.y > height + 50)
   }
 }
 
@@ -363,22 +448,25 @@ object Utils {
 
   def checkDamage(ship: BattleShip, foes: Buffer[BattleShip]): Boolean = {
 
+    Global.drops.foreach(d => d.hitDrop(ship))
+    Global.drops --= Global.drops.filter(_.used)
+
     // invoke bullet damage
-    Global.allBullets.foreach(b => {
+    Global.normalBullets.foreach(b => {
       ship.damage(b)
       foes.foreach(_.damage(b))
     })
     // invoke ship damage
     foes.foreach(f => ship.damageShip(f))
     // ship bullets can fight off foes' bullets
-    val shipBullet = Global.allBullets.filter(!_.isFoe)
-    val foeBullet  = Global.allBullets.filter(_.isFoe)
+    val shipBullet = Global.normalBullets.filter(!_.isFoe)
+    val foeBullet  = Global.normalBullets.filter(_.isFoe)
     shipBullet.foreach(s => foeBullet.foreach(f => if (bulletHit(s, f)) { s.setHit; f.setHit }))
 
     // remove broken ship
     foes --= foes.filter(_.health <= 0)
     // remove used bullet
-    Global.allBullets --= Global.allBullets.filter(_.isHit)
+    Global.normalBullets --= Global.normalBullets.filter(_.isHit)
 
     if (ship.health <= 0) true // game over
     else false
@@ -391,8 +479,10 @@ object game {
     dom.CanvasRenderingContext2D
 
   val intervalId = Buffer.empty[Int]
-  def clearCtx(implicit ctx: Ctx2D, canvas: html.Canvas) =
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  def clearCtx(implicit ctx: Ctx2D, canvas: html.Canvas) = {
+    ctx.fillStyle = "#f0f5f5"
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  }
 
   def start() = {
     import browserStuff._
@@ -410,9 +500,18 @@ object game {
 
     intervalId += dom.window.setInterval(
       () => {
-        foes.foreach(_.foesMoves())
+        if (drops.length < 2) Drops.addDrop(drops)
+        drops --= drops.filter(f => f.y > browserStuff.height + 20)
       },
-      50
+      5000
+    )
+
+    intervalId += dom.window.setInterval(
+      () => {
+        foes.foreach(_.foesMoves())
+        drops.foreach(_.dropMove())
+      },
+      100
     )
 
     intervalId += dom.window.setInterval(
@@ -432,11 +531,16 @@ object game {
     intervalId += dom.window.setInterval(
       () => {
         ship.fire()
+        if (permissionToBiu && energy > 100) {
+          ship.biubiu()
+        } else {
+          permissionToBiu = false
+        }
         if (Utils.checkDamage(ship, foes)) {
           end()
         }
       },
-      100
+      100 //100
     )
 
     intervalId += dom.window.setInterval(
@@ -452,15 +556,18 @@ object game {
         Global.drawHealthBar(ship, ctx)
         Global.drawEnergy(ship, ctx)
         Global.drawScore(ctx)
-        Global.allBullets.foreach(_.draw)
+        Global.normalBullets.foreach(_.draw)
         ship.drawShip()
         foes.foreach(_.drawShip())
+        drops.foreach(_.drawDrop())
       },
       10
     )
   }
 
   def end() = {
+    println(s"ending: ${ship.health}")
+    drawHealthBar(ship = Global.ship, browserStuff.ctx)
     intervalId.foreach(dom.window.clearInterval)
     dom.document.getElementById("end").classList.remove("disappear")
   }
