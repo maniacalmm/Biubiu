@@ -243,14 +243,46 @@ class Rectangle(xx: Double,
 }
 
 object Global {
-  var allBullets = Buffer[Bullet]()
-  var score      = 0;
-  var energy     = 0.0;
+  var allBullets       = Buffer[Bullet]()
+  var score            = 0;
+  var energy           = 0.0;
+  var ship: BattleShip = null
+  var foes             = Buffer[BattleShip]()
 
-  var ship =
-    new Triangle(dom.window.innerWidth / 2, dom.window.innerHeight * 0.9, ctx, false, false, true)
-  ship.setBulletDamage(30)
-  var foes = Buffer[BattleShip]()
+  val mouseMoveEvent =
+    (e: dom.MouseEvent) => {
+      if (Global.ship != null) Global.ship.updatePostition(e.clientX, e.clientY - 15)
+    }
+
+  val touchMoveEvent =
+    (e: dom.TouchEvent) => {
+      if (ship != null) ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 100)
+    }
+
+  val startAgainEvent =
+    (e: MouseEvent) => start()
+
+  val startEvent = (e: MouseEvent) => {
+    dom.document.getElementById("welcome").classList.add("disappear")
+    start()
+  }
+
+  // necessary logistic
+  dom.window.addEventListener("mousemove", mouseMoveEvent)
+  dom.window.addEventListener("touchmove", touchMoveEvent)
+  dom.document.getElementById("again_button").addEventListener("click", startAgainEvent)
+  dom.document.getElementById("start_button").addEventListener("click", startEvent)
+
+  def init() = {
+    dom.document.getElementById("end").classList.add("disappear")
+    ship =
+      new Triangle(dom.window.innerWidth / 2, dom.window.innerHeight * 0.9, ctx, false, false, true)
+    ship.setBulletDamage(30)
+    foes.clear()
+    ship.health = 100
+    energy = 0.0;
+    score = 0;
+  }
 
   def addBullets(b: Bullet) = allBullets += b
   def updateBulletPosition = {
@@ -261,7 +293,7 @@ object Global {
   def drawScore(ctx: Ctx2D) = {
     ctx.beginPath()
     ctx.font = "50px Verdana"
-    ctx.fillText(this.score.toString, browserStuff.width - 200, browserStuff.height * 0.08)
+    ctx.fillText(this.score.toString, browserStuff.width - 200, browserStuff.height * 0.05)
   }
 
   def drawHealthBar(ship: BattleShip, ctx: Ctx2D) = {
@@ -354,19 +386,6 @@ object Utils {
 
 }
 
-object PopUp {
-  object EndGame {
-    val margin = 5
-    val msg    = "..yes?"
-    val y      = browserStuff.height * 0.5
-    val x      = (width - ctx.measureText(msg).width) / 2.0
-    val x1     = x - margin
-    val y1     = y - margin
-    val x2     = x1 + ctx.measureText(msg).width + margin
-    val y2     = y1 + 60 + margin
-  }
-}
-
 object game {
   type Ctx2D =
     dom.CanvasRenderingContext2D
@@ -375,29 +394,11 @@ object game {
   def clearCtx(implicit ctx: Ctx2D, canvas: html.Canvas) =
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  val mouseMoveEvent =
-    (e: dom.MouseEvent) => {
-      if (Global.ship != null) Global.ship.updatePostition(e.clientX, e.clientY - 15)
-    }
-
-  val touchMoveEvent =
-    (e: dom.TouchEvent) => {
-      if (ship != null) ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 100)
-    }
-
-  def startAgainEvent(x1: Double, x2: Double, y1: Double, y2: Double) =
-    (e: MouseEvent) =>
-      if (e.clientX < x2 && e.clientX > x1 && e.clientY < y2 && e.clientY > y1) {
-        cleanEventListener(x1, x2, y1, y2)
-        start()
-    }
-
   def start() = {
     import browserStuff._
     import Global._
 
-    dom.window.addEventListener("mousemove", mouseMoveEvent)
-    dom.window.addEventListener("touchmove", touchMoveEvent)
+    Global.init()
 
     intervalId += dom.window.setInterval(
       () => {
@@ -461,46 +462,11 @@ object game {
 
   def end() = {
     intervalId.foreach(dom.window.clearInterval)
-    import browserStuff._
-    ctx.beginPath
-    ctx.fillStyle = "#FFFFFF"
-    val startingPoint = height * 0.4
-    writeTextInMiddle("Ouch :(", "#000000", startingPoint)
-    writeTextInMiddle("Another go?", "#000000", startingPoint + 55)
-    textInBox("..yes?", "#000000", "#FFFFFF", )
-  }
-
-  def textInBox(msg: String,
-                x1: Double,
-                x2: Double,
-                y1: Double,
-                y2: Double,
-                margin: Double,
-                backgroundColor: String,
-                textColor: String,
-                y: Double) = {
-    ctx.font = "50px Verdana"
-    ctx.beginPath()
-    ctx.fillStyle = backgroundColor
-
-    ctx.beginPath()
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
-    dom.window.addEventListener("click", startAgainEvent(x1, y2, x2, y2))
-    writeTextInMiddle(msg, textColor, y + 50 - margin)
-  }
-
-  def writeTextInMiddle(msg: String, color: String, y: Double) = {
-    import browserStuff._
-    ctx.beginPath()
-    ctx.fillStyle = color
-    ctx.font = "50px Verdana"
-    val x = (width - ctx.measureText(msg).width) / 2.0
-    ctx.fillText(msg, x, y)
+    dom.document.getElementById("end").classList.remove("disappear")
   }
 
   def main(args: Array[String]): Unit = {
-    start()
+    Global.init()
   }
 
 }

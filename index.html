@@ -3,13 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <title>play & play</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Tamma+2:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
     <style>
         html, body {
             overflow: hidden;
+            /*font-family: 'Baloo Tamma 2', cursive;*/
+              font-family: 'Bangers', cursive;
         }
+
+        button {
+            background-color: #000000;
+            /*font-family: 'Baloo Tamma 2', cursive;*/
+              font-family: 'Bangers', cursive;
+            font-size: 4em;  
+            color: #FFFFFF;
+            padding-left: 8px;
+            padding-right: 12px;
+        }
+
+        p {
+          font-size: 3.5em;
+          text-align: center;
+          margin: 0;
+        }
+        .rainbow {
+          font-size: 5em;
+          text-align: center;
+          margin: 0;
+        }
+
+        .disappear {
+          display: none;
+        }
+
+        #end, #welcome {
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }       
+
     </style>
 </head>
 <body>
+  <div id="welcome">
+    <p>Only you can shoot</p>
+    <p class="rainbow"><span style="color:red">R</span><span style="color:orange">a</span><span style="color:yellow">i</span><span style="color:green">n</span><span style="color:blue">b</span><span style="color:#4B0082">o</span><span style="color:#EE82EE">w</span>!</p>
+    <div class="wrapper">
+    <button id="start_button">start!</button>
+    </div>
+  </div>
+
+  <div id="end" class="disappear">
+    <p>Ouch</p>
+    <p>Another go?</p>
+    <div class="wrapper">
+    <button id="again_button">..yes?</button>
+    </div>
+  </div>
 <!-- Include Scala.js compiled code -->
     <script type="text/javascript" src="./scalaJs/target/scala-2.13/scalagame-opt.js"></script>
 </body>
