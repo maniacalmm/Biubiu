@@ -1,7 +1,10 @@
-import game.Ctx2D
+import Global.ship
+import browserStuff.{ctx, height, width}
+import game.{Ctx2D, start}
 import org.scalajs.dom.document
 import org.scalajs.dom
 import org.scalajs.dom.html
+import org.scalajs.dom.raw.MouseEvent
 import sun.security.action.GetLongAction
 
 import scala.scalajs.js
@@ -89,12 +92,6 @@ abstract class BattleShip(xx: Double,
     val distance = Math.pow(s.x - this.x, 2) + Math.pow(s.y - this.y, 2)
     if (distance <= Math.pow(this.size, 2) && s.isFoe != this.isFoe) this.health = 0
   }
-
-//  private def updateBulletStates = {
-//    allBullets = allBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
-//    allBullets = allBullets.filter(b =>
-//      b.y < browserStuff.height + 10 && b.y > 0 && b.x < browserStuff.width + 10 && b.x > 0)
-//  }
 
   def fire() = {
     val delta                    = Random.nextDouble() * 10
@@ -250,6 +247,11 @@ object Global {
   var score      = 0;
   var energy     = 0.0;
 
+  var ship =
+    new Triangle(dom.window.innerWidth / 2, dom.window.innerHeight * 0.9, ctx, false, false, true)
+  ship.setBulletDamage(30)
+  var foes = Buffer[BattleShip]()
+
   def addBullets(b: Bullet) = allBullets += b
   def updateBulletPosition = {
     allBullets = allBullets.map(b => b.copy(x = b.x + b.dx, y = b.y + b.dy))
@@ -259,7 +261,7 @@ object Global {
   def drawScore(ctx: Ctx2D) = {
     ctx.beginPath()
     ctx.font = "50px Verdana"
-    ctx.fillText(this.score.toString, browserStuff.width - 200, 60)
+    ctx.fillText(this.score.toString, browserStuff.width - 200, browserStuff.height * 0.08)
   }
 
   def drawHealthBar(ship: BattleShip, ctx: Ctx2D) = {
@@ -352,29 +354,52 @@ object Utils {
 
 }
 
+object PopUp {
+  object EndGame {
+    val margin = 5
+    val msg    = "..yes?"
+    val y      = browserStuff.height * 0.5
+    val x      = (width - ctx.measureText(msg).width) / 2.0
+    val x1     = x - margin
+    val y1     = y - margin
+    val x2     = x1 + ctx.measureText(msg).width + margin
+    val y2     = y1 + 60 + margin
+  }
+}
+
 object game {
   type Ctx2D =
     dom.CanvasRenderingContext2D
+
+  val intervalId = Buffer.empty[Int]
   def clearCtx(implicit ctx: Ctx2D, canvas: html.Canvas) =
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  def main(args: Array[String]): Unit = {
-    import browserStuff._
-
-    val ship =
-      new Triangle(dom.window.innerWidth / 2, dom.window.innerHeight * 0.9, ctx, false, false, true)
-    ship.setBulletDamage(30)
-    val foes = Buffer[BattleShip]()
-
-    dom.document.onmousemove = (e: dom.MouseEvent) => {
-      ship.updatePostition(e.clientX, e.clientY - 15)
+  val mouseMoveEvent =
+    (e: dom.MouseEvent) => {
+      if (Global.ship != null) Global.ship.updatePostition(e.clientX, e.clientY - 15)
     }
 
-    dom.document.addEventListener("touchmove", (e: dom.TouchEvent) => {
-      ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 100)
-    })
+  val touchMoveEvent =
+    (e: dom.TouchEvent) => {
+      if (ship != null) ship.updatePostition(e.touches(0).clientX, e.touches(0).clientY - 100)
+    }
 
-    dom.window.setInterval(
+  def startAgainEvent(x1: Double, x2: Double, y1: Double, y2: Double) =
+    (e: MouseEvent) =>
+      if (e.clientX < x2 && e.clientX > x1 && e.clientY < y2 && e.clientY > y1) {
+        cleanEventListener(x1, x2, y1, y2)
+        start()
+    }
+
+  def start() = {
+    import browserStuff._
+    import Global._
+
+    dom.window.addEventListener("mousemove", mouseMoveEvent)
+    dom.window.addEventListener("touchmove", touchMoveEvent)
+
+    intervalId += dom.window.setInterval(
       () => {
         if (foes.length < 10) Foes.addFoe(foes)
         foes --= foes.filter(f => f.y > browserStuff.height + 20)
@@ -382,43 +407,45 @@ object game {
       2000
     )
 
-    dom.window.setInterval(
+    intervalId += dom.window.setInterval(
       () => {
         foes.foreach(_.foesMoves())
       },
       50
     )
 
-    dom.window.setInterval(
+    intervalId += dom.window.setInterval(
       () => {
         foes.foreach(_.turn)
       },
       70
     )
 
-    dom.window.setInterval(
+    intervalId += dom.window.setInterval(
       () => {
         Global.updateBulletPosition
       },
       50
     )
 
-    dom.window.setInterval(
+    intervalId += dom.window.setInterval(
       () => {
         ship.fire()
-        Utils.checkDamage(ship, foes)
+        if (Utils.checkDamage(ship, foes)) {
+          end()
+        }
       },
       100
     )
 
-    dom.window.setInterval(
+    intervalId += dom.window.setInterval(
       () => {
         foes.foreach(_.fire())
       },
       150
     )
 
-    dom.window.setInterval(
+    intervalId += dom.window.setInterval(
       () => {
         clearCtx
         Global.drawHealthBar(ship, ctx)
@@ -430,7 +457,50 @@ object game {
       },
       10
     )
+  }
 
+  def end() = {
+    intervalId.foreach(dom.window.clearInterval)
+    import browserStuff._
+    ctx.beginPath
+    ctx.fillStyle = "#FFFFFF"
+    val startingPoint = height * 0.4
+    writeTextInMiddle("Ouch :(", "#000000", startingPoint)
+    writeTextInMiddle("Another go?", "#000000", startingPoint + 55)
+    textInBox("..yes?", "#000000", "#FFFFFF", )
+  }
+
+  def textInBox(msg: String,
+                x1: Double,
+                x2: Double,
+                y1: Double,
+                y2: Double,
+                margin: Double,
+                backgroundColor: String,
+                textColor: String,
+                y: Double) = {
+    ctx.font = "50px Verdana"
+    ctx.beginPath()
+    ctx.fillStyle = backgroundColor
+
+    ctx.beginPath()
+    ctx.fillStyle = "#000000"
+    ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
+    dom.window.addEventListener("click", startAgainEvent(x1, y2, x2, y2))
+    writeTextInMiddle(msg, textColor, y + 50 - margin)
+  }
+
+  def writeTextInMiddle(msg: String, color: String, y: Double) = {
+    import browserStuff._
+    ctx.beginPath()
+    ctx.fillStyle = color
+    ctx.font = "50px Verdana"
+    val x = (width - ctx.measureText(msg).width) / 2.0
+    ctx.fillText(msg, x, y)
+  }
+
+  def main(args: Array[String]): Unit = {
+    start()
   }
 
 }
