@@ -499,8 +499,8 @@ object game {
 
     dom.window.setInterval(
       () => {
-        println(s"bullet: ${Global.allBullets.size}")
-        println(s"ship: ${Global.foes.length}")
+//        println(s"bullet: ${Global.allBullets.size}")
+//        println(s"ship: ${Global.foes.length}")
         Global.allBullets --= Global.allBullets.filter(b => {
           b.x < 0 || b.y < 0 || b.x > browserStuff.width || b.y > browserStuff.height
         })
